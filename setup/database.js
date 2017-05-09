@@ -1,9 +1,9 @@
-import {mongoconfig} from '../configs/database';
+import {config} from '../configs/configs';
 import {MongoClient} from 'mongodb';
 
 export function connect() {
-    return new Promise(function (resolve, reject) {
-        MongoClient.connect(mongoconfig.mongo_uri, function(err, database) {
+    return new Promise((resolve, reject) => {
+        MongoClient.connect(config.mongo_uri, (err, database) => {
             if(err) {
                 console.log("Connected to mongodb server failed");
                 reject(err);
