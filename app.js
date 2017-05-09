@@ -1,7 +1,8 @@
 import {mongoConnect} from './setup/database';
 import {brokerConnect} from './setup/broker'
 import * as os from 'os';
-import {consume} from './services/consume';
+import {consume} from './setup/consume';
+import {checkState} from './setup/populate_messages';
 const cluster = require('cluster');
 
 async function connect() {
@@ -13,9 +14,16 @@ async function connect() {
         /** listen incoming message : **/
         try {
             let listen = await consume();
-            listen.channel.consume(listen.queue, msg => {
+
+            listen.channel.consume(listen.queue, async msg => {
                 console.log(msg.content.toString());
-                    // process data here
+                // process data here
+                let response = await checkState();
+                listen.channel.sendToQueue(msg.properties.replyTo, new Buffer(JSON.stringify(response)), {
+                    correlationId: msg.properties.correlationId,
+                    type: msg.properties.type
+                });
+
                 }, {noAck: true});
         }catch (err){
             console.log(err);
