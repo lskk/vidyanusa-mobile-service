@@ -1,14 +1,26 @@
 import {mongoConnect} from './setup/database';
 import {brokerConnect} from './setup/broker'
 import * as os from 'os';
+import {consume} from './services/consume';
 const cluster = require('cluster');
 
 async function connect() {
     try{
         let database = await mongoConnect();
-        exports.database = database;
         let connection = await brokerConnect();
+        exports.database = database;
         exports.connection = connection;
+        /** listen incoming message : **/
+        try {
+            let listen = await consume();
+            listen.channel.consume(listen.queue, msg => {
+                console.log(msg.content.toString());
+                    // process data here
+                }, {noAck: true});
+        }catch (err){
+            console.log(err);
+            //TODO: reconnect or whateva
+        }
     }catch (err){
         console.log(err);
     }
@@ -21,7 +33,7 @@ if (cluster.isMaster) {
         cluster.fork();
     }
 
-    cluster.on('exit', (worker, code, signal) => {
+    cluster.on('exit', worker => {
         console.log('\nWorker %d died :(', worker.id);
         cluster.fork();
     });
