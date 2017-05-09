@@ -1,0 +1,11 @@
+{
+  "name": "vidyanusa-mobile-service",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "debug": "~2.6.3"
+  }
+}
